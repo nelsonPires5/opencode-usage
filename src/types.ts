@@ -4,7 +4,7 @@ export type ProviderAlias = ProviderId | 'codex' | 'antigravity' | 'zai' | 'z.ai
 
 export const PROVIDERS: ProviderId[] = ['openai', 'google', 'zai-coding-plan'];
 
-export interface QuotaWindow {
+export interface UsageWindow {
   usedPercent: number | null;
   remainingPercent: number | null;
   windowSeconds: number | null;
@@ -15,7 +15,7 @@ export interface QuotaWindow {
 }
 
 export interface UsageWindows {
-  windows: Record<string, QuotaWindow>;
+  windows: Record<string, UsageWindow>;
 }
 
 export interface ProviderUsage extends UsageWindows {
