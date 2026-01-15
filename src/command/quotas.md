@@ -13,5 +13,12 @@ The tool returns a JSON string with a list of provider results:
 - `usage.windows` for global windows
 - `usage.models[model].windows` for per-model windows
 
+Each window includes:
+
+- `remainingPercent` - remaining quota percentage
+- `resetAfterFormatted` - human-readable time remaining (e.g., "2w 3d 5h 10m 30s")
+- `resetAtFormatted` - exact reset datetime (e.g., "Thursday, January 16, 2026, 2:30:45 PM EST")
+- `windowSeconds` - size of the quota window
+
 Parse the JSON, then return a short markdown summary per provider.
-Include remaining percent, reset time remaining, window size, and any errors.
+Include remaining percent, reset time remaining, reset datetime, window size, and any errors.
