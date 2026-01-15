@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'path';
 
+import { createLogger, type Logger } from './providers/common/logger.ts';
 import { fetchGoogleUsage } from './providers/google/fetch.ts';
 import { fetchOpenaiUsage } from './providers/openai/fetch.ts';
 import { fetchZaiUsage } from './providers/zai-coding-plan/fetch.ts';
@@ -77,18 +78,19 @@ const loadCommands = async (): Promise<ParsedCommand[]> => {
   return commands;
 };
 
-const fetchUsage = async (provider: ProviderId): Promise<ProviderResult> => {
+const fetchUsage = async (provider: ProviderId, logger: Logger): Promise<ProviderResult> => {
   switch (provider) {
     case 'openai':
-      return fetchOpenaiUsage();
+      return fetchOpenaiUsage(logger);
     case 'google':
-      return fetchGoogleUsage();
+      return fetchGoogleUsage(logger);
     case 'zai-coding-plan':
-      return fetchZaiUsage();
+      return fetchZaiUsage(logger);
   }
 };
 
-export const UsagePlugin: Plugin = async () => {
+export const UsagePlugin: Plugin = async ({ client }) => {
+  const logger = createLogger(client);
   const commands = await loadCommands();
 
   const usageTool = tool({
@@ -104,7 +106,10 @@ export const UsagePlugin: Plugin = async () => {
     async execute(args: UsageArgs) {
       const targetProvider = parseProvider(args.provider);
       const providers: ProviderId[] = targetProvider ? [targetProvider] : PROVIDERS;
-      const results = await Promise.all(providers.map(fetchUsage));
+
+      await logger.info(`Fetching usage for: ${providers.join(', ')}`);
+
+      const results = await Promise.all(providers.map((provider) => fetchUsage(provider, logger)));
 
       return JSON.stringify(results, null, 2);
     },
