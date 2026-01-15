@@ -22,13 +22,13 @@ export const mockGoogleAccounts: AntigravityAccountsFile = {
 
 export const mockZaiApiKey = 'mock-zai-api-key';
 
-export const expectQuotaSuccess = (result: ProviderResult) => {
+export const expectUsageSuccess = (result: ProviderResult) => {
   expect(result.ok).toBe(true);
   expect(result.configured).toBe(true);
   expect(result.usage).not.toBeNull();
 };
 
-export const expectQuotaError = (result: ProviderResult, expectedError?: string) => {
+export const expectUsageError = (result: ProviderResult, expectedError?: string) => {
   expect(result.ok).toBe(false);
   expect(result.error).toBeTruthy();
   if (expectedError) {
@@ -36,7 +36,7 @@ export const expectQuotaError = (result: ProviderResult, expectedError?: string)
   }
 };
 
-export const expectQuotaNotConfigured = (result: ProviderResult, expectedError?: string) => {
+export const expectUsageNotConfigured = (result: ProviderResult, expectedError?: string) => {
   expect(result.ok).toBe(false);
   expect(result.configured).toBe(false);
   expect(result.error).toBeTruthy();
