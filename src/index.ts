@@ -5,6 +5,7 @@ import { fetchGoogleUsage } from './providers/google/fetch.ts';
 import { fetchOpenaiUsage } from './providers/openai/fetch.ts';
 import { fetchZaiUsage } from './providers/zai-coding-plan/fetch.ts';
 import { PROVIDERS, type ProviderId, type ProviderResult } from './types/index.ts';
+import { formatUsageTable } from './table/format.js';
 import { formatUsageToast } from './toast/format.js';
 
 const fetchUsage = async (provider: ProviderId, logger: Logger): Promise<ProviderResult> => {
@@ -43,16 +44,46 @@ export const UsagePlugin: Plugin = async ({ client }) => {
     },
   });
 
+  const usageTableTool = tool({
+    description:
+      'Get subscription usage data for OpenAI, Google, and z.ai providers as JSON for table formatting',
+    args: {},
+    async execute() {
+      await logger.info('Fetching usage for all providers');
+
+      const results = await Promise.all(PROVIDERS.map((provider) => fetchUsage(provider, logger)));
+
+      const tableData = formatUsageTable(results);
+
+      return JSON.stringify(tableData);
+    },
+  });
+
   return {
     tool: {
       usage_toast: usageToastTool,
+      usage_table: usageTableTool,
     },
     async config(config) {
       config.command = config.command ?? {};
 
-      config.command.usage = {
+      config.command['usage-toast'] = {
         template: 'Call the usage_toast tool.',
-        description: 'Show subscription usage for OpenAI, Google, and z.ai providers',
+        description: 'Show subscription usage as toast notification',
+      };
+
+      config.command.usage = {
+        template: `Call the usage_table tool and display results as a markdown table:
+
+| Provider | Used | Remaining | Status | Resets In |
+|----------|------|-----------|--------|-----------|
+
+Status indicators:
+- 🔴 Critical (remaining < 10%)
+- 🟡 Warning (remaining < 30%)
+- 🟢 OK (remaining >= 30%)
+- ⚪ N/A (not configured)`,
+        description: 'Show subscription usage as formatted table',
       };
     },
   };
