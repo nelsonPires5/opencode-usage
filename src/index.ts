@@ -2,9 +2,9 @@ import type { Plugin } from '@opencode-ai/plugin';
 import { tool } from '@opencode-ai/plugin';
 import path from 'path';
 
-import { fetchGoogleQuota } from './providers/google/fetch.ts';
-import { fetchOpenaiQuota } from './providers/openai/fetch.ts';
-import { fetchZaiQuota } from './providers/zai-coding-plan/fetch.ts';
+import { fetchGoogleUsage } from './providers/google/fetch.ts';
+import { fetchOpenaiUsage } from './providers/openai/fetch.ts';
+import { fetchZaiUsage } from './providers/zai-coding-plan/fetch.ts';
 import { parseProvider } from './providers/common/registry.ts';
 import { PROVIDERS, type ProviderId, type ProviderResult } from './types.ts';
 
@@ -18,7 +18,7 @@ interface ParsedCommand {
   template: string;
 }
 
-interface QuotasArgs {
+interface UsageArgs {
   provider?: string;
 }
 
@@ -63,22 +63,22 @@ const loadCommands = async (): Promise<ParsedCommand[]> => {
   return commands;
 };
 
-const fetchQuota = async (provider: ProviderId): Promise<ProviderResult> => {
+const fetchUsage = async (provider: ProviderId): Promise<ProviderResult> => {
   switch (provider) {
     case 'openai':
-      return fetchOpenaiQuota();
+      return fetchOpenaiUsage();
     case 'google':
-      return fetchGoogleQuota();
+      return fetchGoogleUsage();
     case 'zai-coding-plan':
-      return fetchZaiQuota();
+      return fetchZaiUsage();
   }
 };
 
-export const QuotasPlugin: Plugin = async () => {
+export const UsagePlugin: Plugin = async () => {
   const commands = await loadCommands();
 
-  const quotasTool = tool({
-    description: 'Fetch subscription quotas for OpenAI, Google, and z.ai providers.',
+  const usageTool = tool({
+    description: 'Fetch subscription usage for OpenAI, Google, and z.ai providers.',
     args: {
       provider: tool.schema
         .string()
@@ -87,10 +87,10 @@ export const QuotasPlugin: Plugin = async () => {
           'Provider to check: openai, google, or zai-coding-plan. Aliases: codex, antigravity, zai.'
         ),
     },
-    async execute(args: QuotasArgs) {
+    async execute(args: UsageArgs) {
       const targetProvider = parseProvider(args.provider);
       const providers: ProviderId[] = targetProvider ? [targetProvider] : PROVIDERS;
-      const results = await Promise.all(providers.map(fetchQuota));
+      const results = await Promise.all(providers.map(fetchUsage));
 
       return JSON.stringify(results, null, 2);
     },
@@ -98,7 +98,7 @@ export const QuotasPlugin: Plugin = async () => {
 
   return {
     tool: {
-      quotas: quotasTool,
+      usage: usageTool,
     },
     async config(config) {
       config.command = config.command ?? {};
@@ -113,4 +113,4 @@ export const QuotasPlugin: Plugin = async () => {
   };
 };
 
-export default QuotasPlugin;
+export default UsagePlugin;
