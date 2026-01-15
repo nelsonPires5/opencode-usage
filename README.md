@@ -1,11 +1,11 @@
-# opencode-quota
+# opencode-usage
 
-OpenCode plugin that fetches subscription quotas for OpenAI, Google, and z.ai.
+OpenCode plugin that fetches subscription usage for OpenAI, Google, and z.ai.
 
 ## Features
 
-- `/quotas` command for all providers
-- `/quotas <provider>` for a single provider
+- `/usage` command for all providers
+- `/usage <provider>` for a single provider
 - Returns normalized JSON for provider usage
 - Reads tokens from OpenCode and auth plugins
 
@@ -41,7 +41,7 @@ For local development, use a relative path:
 - Install an Antigravity auth plugin (for example, `opencode-antigravity-auth`) or ensure
   `google` auth exists in `~/.local/share/opencode/auth.json` (alias: `antigravity`).
 - Ensure accounts are stored in `~/.config/opencode/antigravity-accounts.json`.
-- The `activeIndex` account is used for quota checks (falls back to the first account).
+- The `activeIndex` account is used for usage checks (falls back to the first account).
 
 ### z.ai
 
@@ -51,16 +51,16 @@ For local development, use a relative path:
 ## Usage
 
 ```bash
-/quotas
-/quotas openai
-/quotas google
-/quotas zai-coding-plan
+/usage
+/usage openai
+/usage google
+/usage zai-coding-plan
 ```
 
 ## Output
 
-- `quotas` tool returns a JSON array (string) of provider usage results
-- `command/quotas.md` formats a human-readable summary
+- `usage` tool returns a JSON array (string) of provider usage results
+- `command/usage.md` formats a human-readable summary
 
 ## Development
 
