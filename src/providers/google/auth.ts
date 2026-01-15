@@ -54,7 +54,14 @@ const toAuthContext = (entry: ProviderAuthData | null): GoogleAuthContext | null
   }
 
   const accessToken = entry.access ?? entry.token;
-  const refreshToken = entry.refresh;
+  let refreshToken = entry.refresh;
+  let projectId: string | undefined = undefined;
+
+  if (refreshToken && refreshToken.includes('|')) {
+    const parts = refreshToken.split('|');
+    refreshToken = parts[0];
+    projectId = parts[1];
+  }
 
   if (!accessToken && !refreshToken) {
     return null;
@@ -64,6 +71,7 @@ const toAuthContext = (entry: ProviderAuthData | null): GoogleAuthContext | null
     accessToken,
     refreshToken,
     expires: entry.expires,
+    projectId,
   };
 };
 
