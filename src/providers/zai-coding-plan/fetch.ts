@@ -1,5 +1,5 @@
 import type { ProviderResult, ProviderUsage, QuotaWindow } from '../../types.ts';
-import { calculateResetAfterSeconds } from '../common/time.ts';
+import { calculateResetAfterSeconds, formatDuration, formatResetAt } from '../common/time.ts';
 import { getZaiApiKey } from './auth.ts';
 
 interface ZaiLimit {
@@ -72,13 +72,16 @@ const toWindow = (limit?: ZaiLimit): QuotaWindow | null => {
   const usedPercent = limit.percentage ?? null;
   const remainingPercent = usedPercent !== null ? Math.max(0, 100 - usedPercent) : null;
   const resetAt = limit.nextResetTime ? normalizeTimestamp(limit.nextResetTime) : null;
+  const resetAfterSeconds = calculateResetAfterSeconds(resetAt);
 
   return {
     usedPercent,
     remainingPercent,
     windowSeconds: resolveWindowSeconds(limit),
-    resetAfterSeconds: calculateResetAfterSeconds(resetAt),
+    resetAfterSeconds,
     resetAt,
+    resetAtFormatted: resetAt ? formatResetAt(resetAt) : null,
+    resetAfterFormatted: resetAfterSeconds !== null ? formatDuration(resetAfterSeconds) : null,
   };
 };
 
