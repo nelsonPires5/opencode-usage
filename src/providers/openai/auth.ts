@@ -1,5 +1,5 @@
 import type { Logger } from '../common/logger.ts';
-import type { OpenCodeAuth, ProviderAuthData } from '../../types.ts';
+import type { OpenCodeAuth, ProviderAuthData } from '../../types/index.ts';
 import { AUTH_PATHS, loadOpenCodeAuth, readJson } from '../common/files.ts';
 import { getProviderAliases } from '../common/registry.ts';
 
