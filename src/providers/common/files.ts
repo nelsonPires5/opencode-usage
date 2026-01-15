@@ -3,7 +3,7 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 
 import type { Logger } from './logger.ts';
-import type { OpenCodeAuth } from '../../types.ts';
+import type { OpenCodeAuth } from '../../types/index.ts';
 
 export const xdgDataHome = (): string =>
   process.env.XDG_DATA_HOME ?? join(homedir(), '.local', 'share');
