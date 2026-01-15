@@ -1,0 +1,69 @@
+[tools]
+bun = "1.3.2"
+npm = "11.6.3"
+semver = "3.4.0"
+usage = "2.8.0"
+
+[env]
+_.path = [
+    "{{config_root}}/node_modules/.bin",
+]
+
+[tasks]
+build = "npm run build"
+lint = "npx eslint src/"
+"lint:fix" = "npx eslint src/ --fix"
+format = "npx prettier --write ."
+
+[tasks.publish]
+usage = 'flag "--tag <tag>" default="latest"'
+run = "npm publish --provenance --access public --tag ${usage_tag}"
+
+[tasks.bump]
+description = "Bump version, commit, tag and push. Usage: mise run bump -- patch|minor|major [-dev]"
+usage = '''
+arg "<level>" help="Version level: patch, minor, or major"
+flag "-d --dev" help="Append -dev suffix for prerelease"
+'''
+run = '''
+#!/usr/bin/env bash
+set -e
+
+LEVEL="${usage_level}"
+DEV_FLAG="${usage_dev}"
+
+# Validate level
+if [[ ! "$LEVEL" =~ ^(patch|minor|major)$ ]]; then
+  echo "Error: level must be patch, minor, or major"
+  exit 1
+fi
+
+# Get current version
+CURRENT=$(node -p "require('./package.json').version")
+echo "Current version: $CURRENT"
+
+# Strip any existing prerelease suffix for semver calculation
+BASE_VERSION=$(echo "$CURRENT" | sed 's/-.*$//')
+
+# Calculate new version
+NEW_VERSION=$(semver bump "$LEVEL" "$BASE_VERSION")
+
+# Add -dev suffix if requested
+if [[ "$DEV_FLAG" == "true" ]]; then
+  NEW_VERSION="${NEW_VERSION}-dev"
+fi
+
+echo "New version: $NEW_VERSION"
+
+# Update package.json
+npm pkg set version="$NEW_VERSION"
+
+# Commit, tag and push
+git add package.json
+git commit -m "chore: bump version to $NEW_VERSION"
+git tag "v$NEW_VERSION"
+git push origin main
+git push origin "v$NEW_VERSION"
+
+echo "Released v$NEW_VERSION"
+'''
