@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { expectQuotaNotConfigured, isRealAuthEnabled } from '../common/test-helpers.ts';
-import { fetchGoogleQuota } from './fetch.ts';
+import { expectUsageNotConfigured, isRealAuthEnabled } from '../common/test-helpers.ts';
+import { fetchGoogleUsage } from './fetch.ts';
 import * as auth from './auth.ts';
 
 vi.mock('./auth.ts', () => ({
@@ -22,8 +22,8 @@ describe('Google Provider', () => {
     it('handles missing accounts', async () => {
       mockGetGoogleAuth.mockResolvedValue(null);
 
-      const result = await fetchGoogleQuota();
-      expectQuotaNotConfigured(result, 'no accounts found');
+      const result = await fetchGoogleUsage();
+      expectUsageNotConfigured(result, 'no accounts found');
     });
 
     it('handles failed token refresh', async () => {
@@ -34,7 +34,7 @@ describe('Google Provider', () => {
         status: 400,
       } as Response);
 
-      const result = await fetchGoogleQuota();
+      const result = await fetchGoogleUsage();
       expect(result.ok).toBe(false);
       expect(result.configured).toBe(true);
       expect(result.error).toContain('Failed to refresh OAuth token');
@@ -50,7 +50,7 @@ describe('Google Provider', () => {
         } as Response)
         .mockRejectedValue(new Error('Timeout'));
 
-      const result = await fetchGoogleQuota();
+      const result = await fetchGoogleUsage();
       expect(result.ok).toBe(false);
       expect(result.error).toContain('Failed to fetch models from API');
     });
@@ -85,7 +85,7 @@ describe('Google Provider', () => {
           }),
         } as Response);
 
-      const result = await fetchGoogleQuota();
+      const result = await fetchGoogleUsage();
       expect(result.ok).toBe(true);
       expect(result.configured).toBe(true);
       expect(result.usage?.models).toBeDefined();
@@ -110,26 +110,26 @@ describe('Google Provider', () => {
           json: async () => ({ models: {} }),
         } as Response);
 
-      const result = await fetchGoogleQuota();
+      const result = await fetchGoogleUsage();
       expect(result.ok).toBe(true);
       expect(result.usage?.models).toBeUndefined();
     });
   });
 
   describe.skipIf(!isRealAuthEnabled('google'))('with real auth', () => {
-    it('fetches quota successfully', async () => {
+    it('fetches usage successfully', async () => {
       const realAuth = await vi.importActual<typeof import('./auth.ts')>('./auth.ts');
       mockGetGoogleAuth.mockImplementation(realAuth.getGoogleAuth);
 
-      const result = await fetchGoogleQuota();
+      const result = await fetchGoogleUsage();
       expect(result.configured).toBe(true);
     });
 
-    it('returns valid quota data', async () => {
+    it('returns valid usage data', async () => {
       const realAuth = await vi.importActual<typeof import('./auth.ts')>('./auth.ts');
       mockGetGoogleAuth.mockImplementation(realAuth.getGoogleAuth);
 
-      const result = await fetchGoogleQuota();
+      const result = await fetchGoogleUsage();
       if (result.ok && result.usage) {
         expect(result.usage.windows).toBeInstanceOf(Object);
         if (result.usage.models) {
