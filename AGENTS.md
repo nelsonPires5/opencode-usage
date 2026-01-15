@@ -122,14 +122,9 @@ describe('Provider Name', () => {
 **`.env.test`** (committed to repo):
 
 ```bash
-REAL_OPENAI_AUTH=0
-REAL_GOOGLE_AUTH=0
-REAL_ZAI_CODING_PLAN_AUTH=0
-
-# Legacy aliases (still supported)
-REAL_CODEX_AUTH=0
-REAL_ANTIGRAVITY_AUTH=0
-REAL_ZAI_AUTH=0
+TEST_REAL_OPENAI_AUTH=0
+TEST_REAL_GOOGLE_AUTH=0
+TEST_REAL_ZAI_CODING_PLAN_AUTH=0
 ```
 
 ### Mocking Pattern
@@ -155,7 +150,7 @@ global.fetch = mockFetch;
 2. Register provider ID + aliases in `src/providers/common/registry.ts`.
 3. Add provider ID to `PROVIDERS` in `src/types.ts`.
 4. Add provider tests in `src/providers/<provider>/fetch.test.ts`.
-5. Add `REAL_<PROVIDER>_AUTH=0` to `.env.test`.
+5. Add `TEST_REAL_<PROVIDER>_AUTH=0` to `.env.test`.
 6. Use `ProviderResult` and `UsageWindow` to normalize output.
 
 ## Memory
