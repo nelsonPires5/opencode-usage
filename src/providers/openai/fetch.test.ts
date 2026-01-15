@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { expectQuotaNotConfigured, isRealAuthEnabled } from '../common/test-helpers.ts';
-import { fetchOpenaiQuota } from './fetch.ts';
+import { expectUsageNotConfigured, isRealAuthEnabled } from '../common/test-helpers.ts';
+import { fetchOpenaiUsage } from './fetch.ts';
 import * as auth from './auth.ts';
 
 vi.mock('./auth.ts', () => ({
@@ -22,15 +22,15 @@ describe('OpenAI Provider', () => {
     it('handles missing auth', async () => {
       mockGetOpenaiAuth.mockResolvedValue(null);
 
-      const result = await fetchOpenaiQuota();
-      expectQuotaNotConfigured(result, 'Not configured');
+      const result = await fetchOpenaiUsage();
+      expectUsageNotConfigured(result, 'Not configured');
     });
 
     it('handles missing access token', async () => {
       mockGetOpenaiAuth.mockResolvedValue({});
 
-      const result = await fetchOpenaiQuota();
-      expectQuotaNotConfigured(result, 'access token missing');
+      const result = await fetchOpenaiUsage();
+      expectUsageNotConfigured(result, 'access token missing');
     });
 
     it('handles invalid token with 401 error', async () => {
@@ -42,7 +42,7 @@ describe('OpenAI Provider', () => {
         text: async () => 'Unauthorized',
       } as Response);
 
-      const result = await fetchOpenaiQuota();
+      const result = await fetchOpenaiUsage();
       expect(result.ok).toBe(false);
       expect(result.configured).toBe(true);
       expect(result.error).toContain('401');
@@ -52,12 +52,12 @@ describe('OpenAI Provider', () => {
       mockGetOpenaiAuth.mockResolvedValue({ access: 'test-token' });
       mockFetch.mockRejectedValue(new Error('Network error'));
 
-      const result = await fetchOpenaiQuota();
+      const result = await fetchOpenaiUsage();
       expect(result.ok).toBe(false);
       expect(result.error).toContain('Request failed');
     });
 
-    it('parses quota response correctly', async () => {
+    it('parses usage response correctly', async () => {
       mockGetOpenaiAuth.mockResolvedValue({ access: 'test-token' });
 
       const mockResponse = {
@@ -86,7 +86,7 @@ describe('OpenAI Provider', () => {
         json: async () => mockResponse,
       } as Response);
 
-      const result = await fetchOpenaiQuota();
+      const result = await fetchOpenaiUsage();
       expect(result.ok).toBe(true);
       expect(result.configured).toBe(true);
       expect(result.usage).not.toBeNull();
@@ -117,7 +117,7 @@ describe('OpenAI Provider', () => {
         }),
       } as Response);
 
-      const result = await fetchOpenaiQuota();
+      const result = await fetchOpenaiUsage();
       expect(result.ok).toBe(true);
       if (result.usage) {
         expect(result.usage.windows).toEqual({});
@@ -126,11 +126,11 @@ describe('OpenAI Provider', () => {
   });
 
   describe.skipIf(!isRealAuthEnabled('openai'))('with real auth', () => {
-    it('fetches quota successfully', async () => {
+    it('fetches usage successfully', async () => {
       const realAuth = await vi.importActual<typeof import('./auth.ts')>('./auth.ts');
       mockGetOpenaiAuth.mockImplementation(realAuth.getOpenaiAuth);
 
-      const result = await fetchOpenaiQuota();
+      const result = await fetchOpenaiUsage();
       expect(result.configured).toBe(true);
     });
 
@@ -138,7 +138,7 @@ describe('OpenAI Provider', () => {
       const realAuth = await vi.importActual<typeof import('./auth.ts')>('./auth.ts');
       mockGetOpenaiAuth.mockImplementation(realAuth.getOpenaiAuth);
 
-      const result = await fetchOpenaiQuota();
+      const result = await fetchOpenaiUsage();
       if (result.ok && result.usage) {
         const window = result.usage.windows['5h'];
         if (window) {
