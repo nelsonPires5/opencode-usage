@@ -67,7 +67,7 @@ For local development, use a relative path:
 ```bash
 bun install
 mise run build
-bun test
+bun run test
 mise run lint
 ```
 
@@ -78,7 +78,7 @@ Tests use **vitest** with a provider-specific auth configuration system.
 **Run all tests** (mocks only, default):
 
 ```bash
-bun test
+bun run test
 ```
 
 **Run tests with real auth**:
@@ -88,7 +88,7 @@ bun test
 REAL_OPENAI_AUTH=1
 REAL_GOOGLE_AUTH=1
 REAL_ZAI_CODING_PLAN_AUTH=1
-bun test
+bun run test
 ```
 
 **Run specific provider tests**:
@@ -124,7 +124,7 @@ Nelson Pires <nelsonpires.sn@gmail.com>
 
 ## Repository
 
-https://github.com/nelsonPires5/opencode-quota
+https://github.com/nelsonPires5/opencode-usage
 
 ## License
 
