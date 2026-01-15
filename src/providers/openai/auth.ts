@@ -1,3 +1,4 @@
+import type { Logger } from '../common/logger.ts';
 import type { OpenCodeAuth, ProviderAuthData } from '../../types.ts';
 import { AUTH_PATHS, loadOpenCodeAuth, readJson } from '../common/files.ts';
 import { getProviderAliases } from '../common/registry.ts';
@@ -22,8 +23,8 @@ const hasAccessToken = (auth: ProviderAuthData | null): auth is ProviderAuthData
   return Boolean(auth?.access || auth?.token);
 };
 
-const loadOpenCodeAuthEntry = async (): Promise<ProviderAuthData | null> => {
-  const auth = await loadOpenCodeAuth();
+const loadOpenCodeAuthEntry = async (logger?: Logger): Promise<ProviderAuthData | null> => {
+  const auth = await loadOpenCodeAuth(logger);
   if (!auth) {
     return null;
   }
@@ -38,13 +39,13 @@ const loadOpenCodeAuthEntry = async (): Promise<ProviderAuthData | null> => {
   return null;
 };
 
-export const getOpenaiAuth = async (): Promise<ProviderAuthData | null> => {
-  const openCodeAuth = await loadOpenCodeAuthEntry();
+export const getOpenaiAuth = async (logger?: Logger): Promise<ProviderAuthData | null> => {
+  const openCodeAuth = await loadOpenCodeAuthEntry(logger);
   if (openCodeAuth && hasAccessToken(openCodeAuth)) {
     return openCodeAuth;
   }
 
-  const pluginAuth = await readJson<ProviderAuthData>(AUTH_PATHS.openaiPlugin());
+  const pluginAuth = await readJson<ProviderAuthData>(AUTH_PATHS.openaiPlugin(), logger);
   if (pluginAuth && hasAccessToken(pluginAuth)) {
     return pluginAuth;
   }
