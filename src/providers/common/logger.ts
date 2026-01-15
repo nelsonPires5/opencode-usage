@@ -14,7 +14,7 @@ export const maskSecret = (secret: string): string => {
   return `${secret.slice(0, 4)}...${secret.slice(-4)}`;
 };
 
-const noOpLogger: Logger = {
+const noOpLogger = {
   debug: async () => {},
   info: async () => {},
   warn: async () => {},
@@ -25,12 +25,11 @@ interface LogOptions {
   service: string;
   level: LogLevel;
   message: string;
-  extra?: Record<string, unknown>;
 }
 
 interface OpenCodeClient {
   app: {
-    log: (_options: LogOptions) => Promise<boolean> | { ok: boolean };
+    log: (options: LogOptions) => Promise<boolean> | { ok: boolean };
   };
 }
 
@@ -39,18 +38,38 @@ export const createLogger = (client: unknown): Logger => {
 
   return {
     debug: async (message, extra) => {
-      await (client as OpenCodeClient).app.log({ service, level: 'debug', message, extra });
+      await (client as OpenCodeClient).app.log({
+        service,
+        level: 'debug',
+        message,
+        ...(extra ?? {}),
+      });
     },
     info: async (message, extra) => {
-      await (client as OpenCodeClient).app.log({ service, level: 'info', message, extra });
+      await (client as OpenCodeClient).app.log({
+        service,
+        level: 'info',
+        message,
+        ...(extra ?? {}),
+      });
     },
     warn: async (message, extra) => {
-      await (client as OpenCodeClient).app.log({ service, level: 'warn', message, extra });
+      await (client as OpenCodeClient).app.log({
+        service,
+        level: 'warn',
+        message,
+        ...(extra ?? {}),
+      });
     },
     error: async (message, extra) => {
-      await (client as OpenCodeClient).app.log({ service, level: 'error', message, extra });
+      await (client as OpenCodeClient).app.log({
+        service,
+        level: 'error',
+        message,
+        ...(extra ?? {}),
+      });
     },
   };
 };
 
-export const noopLogger = noOpLogger;
+export const noopLogger = noOpLogger as unknown as Logger;
