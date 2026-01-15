@@ -16,7 +16,7 @@ Create or edit `~/.config/opencode/opencode.json`:
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": ["opencode-quota"]
+  "plugin": ["opencode-usage@0.0.1"]
 }
 ```
 
@@ -24,7 +24,7 @@ For local development, use a relative path:
 
 ```json
 {
-  "plugin": ["./path/to/opencode-quota"]
+  "plugin": ["./path/to/opencode-usage"]
 }
 ```
 
