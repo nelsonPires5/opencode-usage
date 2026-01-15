@@ -106,10 +106,10 @@ mise run bump patch --dev
 
 ## NPM Tags
 
-| Version Pattern                       | npm Tag  | Install Command                   |
-| ------------------------------------- | -------- | --------------------------------- |
-| `1.0.0` (stable)                      | `latest` | `npm install opencode-usage`      |
-| `1.0.0-dev`, `-alpha`, `-beta`, `-rc` | `next`   | `npm install opencode-usage@next` |
+| Version Pattern                       | npm Tag  | Install Command                          |
+| ------------------------------------- | -------- | ---------------------------------------- |
+| `1.0.0` (stable)                      | `latest` | `npm install opencode-usage-plugin`      |
+| `1.0.0-dev`, `-alpha`, `-beta`, `-rc` | `next`   | `npm install opencode-usage-plugin@next` |
 
 ## NPM Trusted Publishing
 

@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "opencode-usage",
+      "name": "opencode-usage-plugin",
       "dependencies": {
         "@opencode-ai/plugin": "1.0.85",
       },
