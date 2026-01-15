@@ -4,6 +4,7 @@ import type {
   OpenCodeAuth,
   ProviderAuthData,
 } from '../../types.ts';
+import type { Logger } from '../common/logger.ts';
 import { AUTH_PATHS, loadOpenCodeAuth, readJson } from '../common/files.ts';
 import { getProviderAliases } from '../common/registry.ts';
 
@@ -31,8 +32,8 @@ const toAuthData = (entry: OpenCodeAuth[string]): ProviderAuthData | null => {
   return null;
 };
 
-const loadOpenCodeAuthEntry = async (): Promise<ProviderAuthData | null> => {
-  const auth = await loadOpenCodeAuth();
+const loadOpenCodeAuthEntry = async (logger?: Logger): Promise<ProviderAuthData | null> => {
+  const auth = await loadOpenCodeAuth(logger);
   if (!auth) {
     return null;
   }
@@ -76,8 +77,11 @@ const selectAccount = (accounts: AntigravityAccountsFile | null): AntigravityAcc
   return account ?? null;
 };
 
-const loadAuthFromAccounts = async (): Promise<GoogleAuthContext | null> => {
-  const configAccounts = await readJson<AntigravityAccountsFile>(AUTH_PATHS.antigravityConfig());
+const loadAuthFromAccounts = async (logger?: Logger): Promise<GoogleAuthContext | null> => {
+  const configAccounts = await readJson<AntigravityAccountsFile>(
+    AUTH_PATHS.antigravityConfig(),
+    logger
+  );
   const account = selectAccount(configAccounts);
   if (account) {
     return {
@@ -87,7 +91,10 @@ const loadAuthFromAccounts = async (): Promise<GoogleAuthContext | null> => {
     };
   }
 
-  const dataAccounts = await readJson<AntigravityAccountsFile>(AUTH_PATHS.antigravityData());
+  const dataAccounts = await readJson<AntigravityAccountsFile>(
+    AUTH_PATHS.antigravityData(),
+    logger
+  );
   const fallbackAccount = selectAccount(dataAccounts);
   if (!fallbackAccount) {
     return null;
@@ -100,12 +107,12 @@ const loadAuthFromAccounts = async (): Promise<GoogleAuthContext | null> => {
   };
 };
 
-export const getGoogleAuth = async (): Promise<GoogleAuthContext | null> => {
-  const openCodeAuth = await loadOpenCodeAuthEntry();
+export const getGoogleAuth = async (logger?: Logger): Promise<GoogleAuthContext | null> => {
+  const openCodeAuth = await loadOpenCodeAuthEntry(logger);
   const authContext = toAuthContext(openCodeAuth);
   if (authContext) {
     return authContext;
   }
 
-  return loadAuthFromAccounts();
+  return loadAuthFromAccounts(logger);
 };
