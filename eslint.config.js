@@ -18,13 +18,10 @@ export default tseslint.config(
         sourceType: 'module',
       },
       globals: {
-        // Node.js globals
         console: 'readonly',
         process: 'readonly',
         Buffer: 'readonly',
-        // Bun globals
         Bun: 'readonly',
-        // Web globals available in Bun
         fetch: 'readonly',
         Headers: 'readonly',
         AbortSignal: 'readonly',
@@ -49,7 +46,6 @@ export default tseslint.config(
     files: ['**/*.test.ts'],
     languageOptions: {
       globals: {
-        // Vitest globals
         describe: 'readonly',
         it: 'readonly',
         test: 'readonly',
@@ -59,7 +55,6 @@ export default tseslint.config(
         beforeAll: 'readonly',
         afterAll: 'readonly',
         vi: 'readonly',
-        // Test-specific globals
         global: 'writable',
         Response: 'readonly',
       },
