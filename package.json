@@ -1,7 +1,7 @@
 {
-  "name": "opencode-quota",
-  "version": "0.0.3-dev",
-  "description": "OpenCode plugin to display subscription quotas for OpenAI, Google, and z.ai",
+  "name": "opencode-usage",
+  "version": "0.0.1-dev",
+  "description": "OpenCode plugin to display subscription usages for OpenAI, Google, and z.ai",
   "author": {
     "name": "Nelson Pires",
     "email": "nelsonpires.sn@gmail.com"
@@ -16,12 +16,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nelsonPires5/opencode-quota.git"
+    "url": "git+https://github.com/nelsonPires5/opencode-usage.git"
   },
   "keywords": [
     "opencode",
     "plugin",
-    "quota",
+    "usage",
     "chatgpt",
     "codex",
     "antigravity",
