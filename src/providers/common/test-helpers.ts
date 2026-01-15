@@ -45,12 +45,12 @@ export const expectUsageNotConfigured = (result: ProviderResult, expectedError?:
   }
 };
 
-const REAL_AUTH_ENV: Record<ProviderId, string[]> = {
-  openai: ['REAL_OPENAI_AUTH', 'REAL_CODEX_AUTH'],
-  google: ['REAL_GOOGLE_AUTH', 'REAL_ANTIGRAVITY_AUTH'],
-  'zai-coding-plan': ['REAL_ZAI_CODING_PLAN_AUTH', 'REAL_ZAI_AUTH'],
+const REAL_AUTH_ENV: Record<ProviderId, string> = {
+  openai: 'TEST_REAL_OPENAI_AUTH',
+  google: 'TEST_REAL_GOOGLE_AUTH',
+  'zai-coding-plan': 'TEST_REAL_ZAI_CODING_PLAN_AUTH',
 };
 
 export const isRealAuthEnabled = (provider: ProviderId): boolean => {
-  return REAL_AUTH_ENV[provider].some((envVar) => process.env[envVar] === '1');
+  return process.env[REAL_AUTH_ENV[provider]] === '1';
 };
