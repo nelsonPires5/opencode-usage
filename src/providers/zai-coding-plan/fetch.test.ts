@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { expectQuotaNotConfigured, isRealAuthEnabled } from '../common/test-helpers.ts';
-import { fetchZaiQuota } from './fetch.ts';
+import { expectUsageNotConfigured, isRealAuthEnabled } from '../common/test-helpers.ts';
+import { fetchZaiUsage } from './fetch.ts';
 import * as auth from './auth.ts';
 
 vi.mock('./auth.ts', () => ({
@@ -22,8 +22,8 @@ describe('Zai Provider', () => {
     it('handles missing API key', async () => {
       mockGetZaiApiKey.mockResolvedValue(null);
 
-      const result = await fetchZaiQuota();
-      expectQuotaNotConfigured(result, 'no API key found');
+      const result = await fetchZaiUsage();
+      expectUsageNotConfigured(result, 'no API key found');
     });
 
     it('handles API error response', async () => {
@@ -34,7 +34,7 @@ describe('Zai Provider', () => {
         text: async () => 'Unauthorized',
       } as Response);
 
-      const result = await fetchZaiQuota();
+      const result = await fetchZaiUsage();
       expect(result.ok).toBe(false);
       expect(result.configured).toBe(true);
       expect(result.error).toContain('401');
@@ -44,12 +44,12 @@ describe('Zai Provider', () => {
       mockGetZaiApiKey.mockResolvedValue('test-api-key');
       mockFetch.mockRejectedValue(new Error('Network error'));
 
-      const result = await fetchZaiQuota();
+      const result = await fetchZaiUsage();
       expect(result.ok).toBe(false);
       expect(result.error).toContain('Request failed');
     });
 
-    it('parses quota response with tokens limit', async () => {
+    it('parses usage response with tokens limit', async () => {
       mockGetZaiApiKey.mockResolvedValue('test-api-key');
       mockFetch.mockResolvedValue({
         ok: true,
@@ -72,7 +72,7 @@ describe('Zai Provider', () => {
         }),
       } as Response);
 
-      const result = await fetchZaiQuota();
+      const result = await fetchZaiUsage();
       expect(result.ok).toBe(true);
       expect(result.configured).toBe(true);
       expect(result.usage?.windows['5h']?.usedPercent).toBe(30);
@@ -110,7 +110,7 @@ describe('Zai Provider', () => {
         }),
       } as Response);
 
-      const result = await fetchZaiQuota();
+      const result = await fetchZaiUsage();
       expect(result.ok).toBe(true);
       expect(result.usage?.windows['5h']?.usedPercent).toBe(20);
       expect(result.usage?.windows['5h']?.remainingPercent).toBe(80);
@@ -126,26 +126,26 @@ describe('Zai Provider', () => {
         json: async () => ({}),
       } as Response);
 
-      const result = await fetchZaiQuota();
+      const result = await fetchZaiUsage();
       expect(result.ok).toBe(true);
       expect(result.usage?.windows).toEqual({});
     });
   });
 
   describe.skipIf(!isRealAuthEnabled('zai-coding-plan'))('with real auth', () => {
-    it('fetches quota successfully', async () => {
+    it('fetches usage successfully', async () => {
       const realAuth = await vi.importActual<typeof import('./auth.ts')>('./auth.ts');
       mockGetZaiApiKey.mockImplementation(realAuth.getZaiApiKey);
 
-      const result = await fetchZaiQuota();
+      const result = await fetchZaiUsage();
       expect(result.configured).toBe(true);
     });
 
-    it('returns valid quota data', async () => {
+    it('returns valid usage data', async () => {
       const realAuth = await vi.importActual<typeof import('./auth.ts')>('./auth.ts');
       mockGetZaiApiKey.mockImplementation(realAuth.getZaiApiKey);
 
-      const result = await fetchZaiQuota();
+      const result = await fetchZaiUsage();
       if (result.ok && result.usage?.windows) {
         const windowValues = Object.values(result.usage.windows);
         expect(windowValues.length).toBeGreaterThanOrEqual(0);
