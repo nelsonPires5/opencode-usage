@@ -1,4 +1,5 @@
 import type { ProviderResult, ProviderUsage, UsageWindow } from '../../types.ts';
+import { maskSecret, type Logger, noopLogger } from '../common/logger.ts';
 import { calculateResetAfterSeconds, formatDuration, formatResetAt } from '../common/time.ts';
 import { getOpenaiAuth } from './auth.ts';
 
@@ -39,10 +40,11 @@ const toWindow = (window?: OpenaiBackendWindow): UsageWindow | null => {
   };
 };
 
-export const fetchOpenaiUsage = async (): Promise<ProviderResult> => {
-  const auth = await getOpenaiAuth();
+export const fetchOpenaiUsage = async (logger: Logger = noopLogger): Promise<ProviderResult> => {
+  const auth = await getOpenaiAuth(logger);
 
   if (!auth) {
+    await logger.warn('No auth configured for openai');
     return {
       provider: 'openai',
       ok: false,
@@ -54,6 +56,7 @@ export const fetchOpenaiUsage = async (): Promise<ProviderResult> => {
 
   const accessToken = auth.access ?? auth.token;
   if (!accessToken) {
+    await logger.warn('Auth configured but access token missing for openai');
     return {
       provider: 'openai',
       ok: false,
@@ -73,6 +76,9 @@ export const fetchOpenaiUsage = async (): Promise<ProviderResult> => {
     });
 
     if (!response.ok) {
+      await logger.error(`API error ${response.status} for openai`, {
+        token: maskSecret(accessToken),
+      });
       return {
         provider: 'openai',
         ok: false,
@@ -98,6 +104,8 @@ export const fetchOpenaiUsage = async (): Promise<ProviderResult> => {
       windows,
     };
 
+    await logger.info('openai usage fetched successfully');
+
     return {
       provider: 'openai',
       ok: true,
@@ -106,6 +114,7 @@ export const fetchOpenaiUsage = async (): Promise<ProviderResult> => {
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    await logger.error(`Request failed for openai: ${message}`);
     return {
       provider: 'openai',
       ok: false,
