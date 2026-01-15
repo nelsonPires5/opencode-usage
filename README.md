@@ -85,9 +85,9 @@ bun run test
 
 ```bash
 # Edit .env.test and set desired provider(s) to 1
-REAL_OPENAI_AUTH=1
-REAL_GOOGLE_AUTH=1
-REAL_ZAI_CODING_PLAN_AUTH=1
+TEST_REAL_OPENAI_AUTH=1
+TEST_REAL_GOOGLE_AUTH=1
+TEST_REAL_ZAI_CODING_PLAN_AUTH=1
 bun run test
 ```
 
@@ -114,7 +114,7 @@ Tests are organized into two categories per provider:
 **Adding new providers**:
 
 1. Implement provider function in `src/providers/`
-2. Add `REAL_NEWPROVIDER_AUTH=0` to `.env.test`
+2. Add `TEST_REAL_NEWPROVIDER_AUTH=0` to `.env.test`
 3. Create `src/providers/newprovider.test.ts` following existing patterns
 4. Add helpers to `src/test-helpers.ts` if needed
 
