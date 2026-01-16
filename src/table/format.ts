@@ -146,16 +146,12 @@ export const formatDashboardString = (data: DashboardData): string => {
         // Example: └─ 5h Window
         lines.push(`  ${branch} ${window.label}`);
 
-        // Line 2: Progress Bar + Percent
-        // Example:    [████░░░░] 45%
+        // Line 2: Progress Bar + Percent + Reset info
+        // Example:    [████░░░░] 45% • Resets in 2h 15m
         const percentStr =
           window.usedPercent !== null ? `${Math.round(window.usedPercent)}%` : 'N/A';
-        lines.push(`  ${pipe} ${renderBar(window.usedPercent)}  ${percentStr}`);
-
-        // Line 3: Status
-        // Example:    Status 🟢 OK • Resets in 2h 15m
         lines.push(
-          `  ${pipe} Status ${window.status} ${window.statusText} • Resets in ${window.resetsIn}`
+          `  ${pipe} ${renderBar(window.usedPercent)}  ${percentStr} • Resets in ${window.resetsIn}`
         );
 
         // Spacer line unless it's the very last window of the section

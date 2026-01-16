@@ -226,7 +226,8 @@ describe('Dashboard Format', () => {
       expect(output).toContain('OPENAI ─────');
       expect(output).toContain('Overall Usage');
       expect(output).toContain('└─ 5h Window');
-      expect(output).toContain('Status 🟢 OK • Resets in 2h');
+      expect(output).toContain('• Resets in 2h');
+      expect(output).not.toContain('Status 🟢 OK');
       // Check for bar (rough check)
       expect(output).toContain('[██');
     });
