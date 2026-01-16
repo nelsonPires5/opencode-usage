@@ -1,23 +1,8 @@
 import type { Plugin } from '@opencode-ai/plugin';
 import { tool } from '@opencode-ai/plugin';
-import { createLogger, type Logger } from './providers/common/logger.ts';
-import { fetchGoogleUsage } from './providers/google/fetch.ts';
-import { fetchOpenaiUsage } from './providers/openai/fetch.ts';
-import { fetchZaiUsage } from './providers/zai-coding-plan/fetch.ts';
-import { PROVIDERS, type ProviderId, type ProviderResult } from './types/index.ts';
+import { createLogger } from './providers/common/logger.ts';
 import { formatDashboardData, formatDashboardString } from './dashboard/format.ts';
 import { formatUsageToast } from './toast/format.ts';
-
-const fetchUsage = async (provider: ProviderId, logger: Logger): Promise<ProviderResult> => {
-  switch (provider) {
-    case 'openai':
-      return fetchOpenaiUsage(logger);
-    case 'google':
-      return fetchGoogleUsage(logger);
-    case 'zai-coding-plan':
-      return fetchZaiUsage(logger);
-  }
-};
 
 export const UsagePlugin: Plugin = async ({ client }) => {
   const logger = createLogger(client);
@@ -26,11 +11,13 @@ export const UsagePlugin: Plugin = async ({ client }) => {
     description: 'Show subscription usage as toast for OpenAI, Google, and z.ai providers',
     args: {},
     async execute() {
-      await logger.info('Fetching usage for all providers');
+      const { loadCacheForDisplay } = await import('./cache/reader.ts');
 
-      const results = await Promise.all(PROVIDERS.map((provider) => fetchUsage(provider, logger)));
+      await logger.info('Loading usage from cache');
 
-      const toast = await formatUsageToast(results, logger);
+      const displayCache = await loadCacheForDisplay(logger);
+
+      const toast = await formatUsageToast(displayCache, logger);
 
       await client.tui.showToast({
         body: {
@@ -49,13 +36,19 @@ export const UsagePlugin: Plugin = async ({ client }) => {
       'Get subscription usage data for OpenAI, Google, and z.ai providers as a formatted table',
     args: {},
     async execute() {
-      await logger.info('Fetching usage for all providers');
+      const { loadCacheForDisplay } = await import('./cache/reader.ts');
 
-      const results = await Promise.all(PROVIDERS.map((provider) => fetchUsage(provider, logger)));
+      await logger.info('Loading usage from cache');
 
-      const dashboardData = formatDashboardData(results);
+      const displayCache = await loadCacheForDisplay(logger);
 
-      return formatDashboardString(dashboardData);
+      if (!displayCache) {
+        return 'No cache available';
+      }
+
+      const dashboardData = formatDashboardData(displayCache);
+
+      return formatDashboardString(dashboardData, displayCache.updatedAt, displayCache.isStale);
     },
   });
 
@@ -63,6 +56,12 @@ export const UsagePlugin: Plugin = async ({ client }) => {
     tool: {
       usage_toast: usageToastTool,
       usage_table: usageTableTool,
+    },
+    async event({ event }) {
+      if (event.type === 'server.connected') {
+        const { startWorker } = await import('./cache/worker.ts');
+        startWorker(logger);
+      }
     },
     async config(config) {
       config.command = config.command ?? {};
@@ -79,5 +78,25 @@ export const UsagePlugin: Plugin = async ({ client }) => {
     },
   };
 };
+
+const setupShutdownHandlers = async (): Promise<void> => {
+  const { isWorkerRunning, stopWorker } = await import('./cache/worker.ts');
+  const { createLogger } = await import('./providers/common/logger.ts');
+  const logger = createLogger({
+    app: { log: () => Promise.resolve(true) },
+  } as unknown as Parameters<typeof createLogger>[0]);
+
+  const onShutdown = async (): Promise<void> => {
+    if (await isWorkerRunning()) {
+      stopWorker(logger);
+    }
+  };
+
+  process.on('SIGINT', onShutdown);
+  process.on('SIGTERM', onShutdown);
+  process.on('exit', onShutdown);
+};
+
+void setupShutdownHandlers();
 
 export default UsagePlugin;
