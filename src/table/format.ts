@@ -93,14 +93,23 @@ export const formatDashboardData = (results: ProviderResult[]): DashboardData =>
 
     // 2. Per-Model Windows
     if (usage.models) {
+      const modelSections: DashboardSection[] = [];
       for (const [modelName, modelUsage] of Object.entries(usage.models)) {
         const modelWindowEntries = Object.entries(modelUsage.windows);
         if (modelWindowEntries.length > 0) {
-          sections.push({
+          modelSections.push({
             title: modelName,
             windows: modelWindowEntries.map(([key, win]) => formatWindow(key, win)),
           });
         }
+      }
+
+      if (modelSections.length > 0) {
+        sections.push({
+          title: 'Model Usage',
+          windows: [],
+          sections: modelSections,
+        });
       }
     }
 
@@ -132,9 +141,10 @@ export const formatDashboardString = (data: DashboardData): string => {
 
     for (let i = 0; i < provider.sections.length; i++) {
       const section = provider.sections[i];
-      // Section title (e.g., Overall Usage or model name)
+      // Section title (e.g., Overall Usage or Model Usage)
       lines.push(section.title);
 
+      // Render direct windows (e.g. Overall Usage)
       for (let j = 0; j < section.windows.length; j++) {
         const window = section.windows[j];
         const isLastWindow = j === section.windows.length - 1;
@@ -143,11 +153,9 @@ export const formatDashboardString = (data: DashboardData): string => {
         const pipe = isLastWindow ? '  ' : '│ ';
 
         // Line 1: Label
-        // Example: └─ 5h Window
         lines.push(`  ${branch} ${window.label}`);
 
-        // Line 2: Progress Bar + Percent + Reset info
-        // Example:    [████░░░░] 45% • Resets in 2h 15m
+        // Line 2: Progress Bar + Percent + Reset
         const percentStr =
           window.usedPercent !== null ? `${Math.round(window.usedPercent)}%` : 'N/A';
         lines.push(
@@ -160,11 +168,52 @@ export const formatDashboardString = (data: DashboardData): string => {
         }
       }
 
-      // Add empty line after section (unless it's the last section of the provider? maybe)
+      // Render nested sections (e.g. Models)
+      if (section.sections) {
+        for (let k = 0; k < section.sections.length; k++) {
+          const subsection = section.sections[k];
+          const isLastSubsection = k === section.sections.length - 1;
+          const branch = isLastSubsection ? '└─' : '├─';
+          const pipe = isLastSubsection ? '  ' : '│ ';
+
+          lines.push(`  ${branch} ${subsection.title}`);
+
+          for (let m = 0; m < subsection.windows.length; m++) {
+            const window = subsection.windows[m];
+            const isLastWindow = m === subsection.windows.length - 1;
+
+            // Indent deeper for windows under a model
+            const subBranch = isLastWindow ? '└─' : '├─';
+            // If we are in the last subsection, the parent pipe is space
+            // If we are NOT in the last subsection, the parent pipe is │
+            // Wait, we need to pass down the "continuation" context
+
+            // Line 1: Label
+            lines.push(`  ${pipe}  ${subBranch} ${window.label}`);
+
+            // Line 2
+            const percentStr =
+              window.usedPercent !== null ? `${Math.round(window.usedPercent)}%` : 'N/A';
+            const subPipe = isLastWindow ? '  ' : '│ ';
+
+            lines.push(
+              `  ${pipe}  ${subPipe} ${renderBar(window.usedPercent)}  ${percentStr} • Resets in ${window.resetsIn}`
+            );
+
+            if (!isLastWindow) {
+              lines.push(`  ${pipe}  ${subPipe}`);
+            }
+          }
+
+          if (!isLastSubsection) {
+            lines.push(`  ${pipe}`);
+          }
+        }
+      }
+
+      // Add empty line after section
       lines.push('');
     }
-    // Add empty line between providers
-    // (Already added one after last section, so maybe check logic)
   }
 
   return lines.join('\n').trim();

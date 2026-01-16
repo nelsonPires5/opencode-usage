@@ -114,11 +114,15 @@ describe('Dashboard Format', () => {
 
       expect(data.providers).toHaveLength(1);
       expect(data.providers[0].name).toBe('GOOGLE');
-      expect(data.providers[0].sections).toHaveLength(2);
-      expect(data.providers[0].sections.map((s) => s.title)).toEqual([
-        'claude-opus-4.5',
-        'gemini-3-pro',
-      ]);
+      // Should have 1 section "Model Usage"
+      expect(data.providers[0].sections).toHaveLength(1);
+      expect(data.providers[0].sections[0].title).toBe('Model Usage');
+
+      // Should have 2 subsections (claude, gemini)
+      const subsections = data.providers[0].sections[0].sections;
+      expect(subsections).toBeDefined();
+      expect(subsections).toHaveLength(2);
+      expect(subsections?.map((s) => s.title)).toEqual(['claude-opus-4.5', 'gemini-3-pro']);
     });
 
     it('formats Google with both global and model windows', () => {
@@ -140,7 +144,11 @@ describe('Dashboard Format', () => {
 
       expect(data.providers[0].sections).toHaveLength(2);
       expect(data.providers[0].sections[0].title).toBe('Overall Usage');
-      expect(data.providers[0].sections[1].title).toBe('claude-opus-4.5');
+      expect(data.providers[0].sections[1].title).toBe('Model Usage');
+
+      const modelSection = data.providers[0].sections[1];
+      expect(modelSection.sections).toHaveLength(1);
+      expect(modelSection.sections?.[0].title).toBe('claude-opus-4.5');
     });
 
     it('skips unconfigured providers', () => {

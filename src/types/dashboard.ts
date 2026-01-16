@@ -14,6 +14,7 @@ export interface DashboardWindow {
 export interface DashboardSection {
   title: string;
   windows: DashboardWindow[];
+  sections?: DashboardSection[];
 }
 
 export interface DashboardProvider {
