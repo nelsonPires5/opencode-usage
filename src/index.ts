@@ -7,6 +7,8 @@ import { formatUsageToast } from './toast/format.ts';
 export const UsagePlugin: Plugin = async ({ client }) => {
   const logger = createLogger(client);
 
+  await logger.info('UsagePlugin initialized');
+
   const usageToastTool = tool({
     description: 'Show subscription usage as toast for OpenAI, Google, and z.ai providers',
     args: {},
@@ -58,9 +60,19 @@ export const UsagePlugin: Plugin = async ({ client }) => {
       usage_table: usageTableTool,
     },
     async event({ event }) {
+      await logger.debug('Event received', { type: event.type });
+
       if (event.type === 'server.connected') {
-        const { startWorker } = await import('./cache/worker.ts');
-        startWorker(logger);
+        try {
+          await logger.info('server.connected event received, starting worker');
+          const { startWorker } = await import('./cache/worker.ts');
+          startWorker(logger);
+          await logger.info('Worker started successfully');
+        } catch (error) {
+          await logger.error('Failed to start worker', {
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
       }
     },
     async config(config) {
